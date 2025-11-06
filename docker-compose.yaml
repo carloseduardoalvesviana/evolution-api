@@ -77,8 +77,6 @@ volumes:
   postgres_data:
 
 networks:
-  evolution-net:
+  default:
     name: evolution-net
     driver: bridge
-  dokploy-network:
-    external: true
