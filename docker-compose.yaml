@@ -6,10 +6,12 @@ services:
     image: evoapicloud/evolution-api:latest
     restart: always
     depends_on:
-      - redis
-      - evolution-postgres
+      evolution-postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     ports:
-      - "8082:8080"   # 🔥 alterado de 8080:8080 para 8082:8080
+      - "8082:8080"
     volumes:
       - evolution_instances:/evolution/instances
     networks:
@@ -24,7 +26,7 @@ services:
     image: evoapicloud/evolution-manager:latest
     restart: always
     ports:
-      - "8081:80"        # alterado para expor o painel na porta 8081 (padrão)
+      - "8081:80"
     networks:
       - evolution-net
 
@@ -47,22 +49,27 @@ services:
     restart: always
     env_file:
       - .env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     command:
       - postgres
       - -c
       - max_connections=1000
       - -c
       - listen_addresses=*
-    environment:
-      - POSTGRES_DB=${POSTGRES_DATABASE}
-      - POSTGRES_USER=${POSTGRES_USERNAME}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - evolution-net
     expose:
       - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   evolution_instances:
