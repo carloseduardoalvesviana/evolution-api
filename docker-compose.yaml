@@ -9,7 +9,7 @@ services:
       - redis
       - evolution-postgres
     ports:
-      - "8080:8080"
+      - "8082:8080"   # 🔥 alterado de 8080:8080 para 8082:8080
     volumes:
       - evolution_instances:/evolution/instances
     networks:
